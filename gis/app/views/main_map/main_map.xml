@@ -1,0 +1,46 @@
+<Page loaded="pageLoaded"
+    xmlns="http://www.nativescript.org/tns.xsd"
+    xmlns:maps="nativescript-google-maps-sdk">
+    <ActionBar title="Tra cứu thông tin địa điểm" android:horizontalAlignment="center">
+        <Label text="Tra cứu thông tin địa điểm"/>
+    </ActionBar>
+
+    <StackLayout class="wrapper">
+        <AbsoluteLayout class="main-view">
+            <StackLayout top="0" left="0" class="map-view">
+                <maps:mapView latitude="{{ latitude }}" longitude="{{ longitude }}" 
+                                                zoom="{{ zoom }}"
+                                                padding="{{ padding }}" mapReady="onMapReady"  
+                                            markerSelect="onMarkerSelect" markerBeginDragging="onMarkerBeginDragging"
+                                            markerEndDragging="onMarkerEndDragging" markerDrag="onMarkerDrag"
+                                            cameraChanged="onCameraChanged" />
+            </StackLayout>
+
+            <StackLayout class="float-info">
+                <GridLayout columns="110, *" rows="20, 20, 20" class="info-group">
+                    <Label text="Địa điểm 1" row="0" col="0" class="info-name"/>
+                    <Label text="{{ location_1_address }}" row="0" col="1"/>
+
+                    <Label text="Phường" row="1" col="0" class="sub-info-name"/>
+                    <Label text="{{ location_1_ward }}" row="1" col="1"/>
+                    <Label text="Quận" row="2" col="0" class="sub-info-name"/>
+                    <Label text="{{ location_1_district }}" row="2" col="1"/>
+                </GridLayout>
+                <GridLayout columns="110, *" rows="20, 20, 20" class="info-group">
+                    <Label text="Địa điểm 2" row="0" col="0" class="info-name"/>
+                    <Label text="{{ location_2_address }}" row="0" col="1"/>
+
+                    <Label text="Phường" row="1" col="0" class="sub-info-name"/>
+                    <Label text="{{ location_2_ward }}" row="1" col="1"/>
+                    <Label text="Quận" row="2" col="0" class="sub-info-name"/>
+                    <Label text="{{ location_2_district }}" row="2" col="1"/>
+                </GridLayout>
+
+                <GridLayout columns="110, *" rows="20" class="info-group">
+                    <Label text="Khoảng cách" class="info-name" row="0" col="0"/>
+                    <Label text="{{ distance }}" row="0" col="1"/>
+                </GridLayout>
+            </StackLayout>
+        </AbsoluteLayout>
+    </StackLayout>
+</Page>

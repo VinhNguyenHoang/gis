@@ -1,0 +1,11 @@
+.main{
+    margin: 10;
+}
+
+textfield{
+    margin-bottom: 12;
+    placeholder-color: #777777;
+    background-color: #ffffff;
+    border-radius: 1;
+    font-size: 17em;
+}

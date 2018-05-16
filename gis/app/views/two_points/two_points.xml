@@ -1,0 +1,8 @@
+<Page loaded="pageLoaded" tap="dismissKeyboardInput">
+    <StackLayout class="main">
+        <TextField id="location_1" hint="Nhập địa điểm 1" autocorrect="false" autocapitalizationType="none"/>
+        <TextField id="location_2" hint="Nhập địa điểm 2" autocorrect="false" autocapitalizationType="none"/>
+
+        <Button text="Tiếp tục" tap="continue"/>
+    </StackLayout>
+</Page>
