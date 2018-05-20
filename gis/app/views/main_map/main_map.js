@@ -6,6 +6,7 @@ var Map = require("../../utils/Map");
 var Permissions = require("nativescript-permissions");
 var application = require("application");
 var Color = require("color").Color;
+var Dialogs = require("ui/dialogs");
 
 var mapView = null;
 var page = null;
@@ -30,6 +31,7 @@ var pageContext = new ObservableModule.fromObject({
 exports.pageLoaded = function(args){
     page = args.object;
     page.bindingContext = pageContext;
+    page.actionBarHidden = true;
     console.log(">> onPageLoaded");
 }
 
@@ -49,15 +51,15 @@ exports.onMapReady = function(args){
     });
 
     _getDataFromAddress1(page.navigationContext.location_1)
-    .then(function(){
-        _getDataFromAddress2(page.navigationContext.location_2).then(function(){
+    .then(function(data){
+        _getDistrictPolygon(data, '#9970d0a0', '#9900d0a0');
+        _getDataFromAddress2(page.navigationContext.location_2).then(function(data){
+            _getDistrictPolygon(data, 'rgba(255, 0, 255, 0.36)', 'rgba(255, 0, 255, 0.9)');
             _getMapDirections(latlng_1, latlng_2);
             _getDistance();
         });
     });
     
-        
-
 }
 
 function _getDataFromAddress1(address) {
@@ -75,7 +77,8 @@ function _getDataFromAddress1(address) {
         page.bindingContext.location_1_district = data._administrative_area_level_2;
 
         latlng_1 = Gmap.Position.positionFromLatLng(data._lat, data._long);
-        console.dir(latlng_1);
+        
+        return data;
     }).catch(e => {
         console.log(e);
     });
@@ -94,7 +97,8 @@ function _getDataFromAddress2(address) {
         page.bindingContext.location_2_ward = data._sublocality;
         page.bindingContext.location_2_district = data._administrative_area_level_2;
         latlng_2 = Gmap.Position.positionFromLatLng(data._lat, data._long);
-        console.dir(latlng_2);
+        
+        return data;
     }).catch(e => {
         console.log(e);
     });
@@ -105,7 +109,7 @@ function _getCurPos() {
     
         pageContext.latitude = loc["latitude"];
         pageContext.longitude = loc["longitude"];
-        pageContext.zoom = 14;
+        pageContext.zoom = 11;
         return loc;
     }).catch(e => {
         console.log(e);
@@ -163,6 +167,50 @@ function _getMapDirections(fromLocation, toLocation) {
     });
 }
 
+function _getDistrictPolygon(address, fillColor, strokeColor) {
+    Map.getAdministrativeAreaLevel2Polygon(address)
+    .then(data => {
+        var polygon = new Gmap.Polygon();
+        for (var i = 0; i < data.length; i++)
+        {
+            polygon.addPoints(data[i]);
+        }
+        polygon.visible = true;
+        polygon.fillColor = new Color(fillColor);
+        polygon.strokeColor = new Color(strokeColor);
+        polygon.strokeWidth = 5;
+        mapView.addPolygon(polygon);
+    }).catch(e => {
+        console.log(e);
+    });
+}
+
+function _getRouteLines(address, color) {
+    Map.getRouteLines(address)
+    .then(data => {
+        mapView.removeAllPolylines();
+        var polyline = new Gmap.Polyline();
+        for (var i = 0; i < data.length; i++)
+        {
+            polyline.addPoint(data[i]);
+        }
+        polyline.visible = true;
+        polyline.color = new Color(color);
+        polyline.width = 5;
+        mapView.addPolyline(polyline);
+        // for(var i = 0; i < data.length; i++)
+        // {
+        //     var marker = new Gmap.Marker();
+        //     marker.draggable = false;
+        //     marker.color = "green";
+        //     marker.position = data[i];
+        //     mapView.addMarker(marker);
+        // }
+    }).catch(e => {
+        console.log(e);
+    });
+}
+
 function _getDistance(){
     console.log(">> getting distance");
     Map.getDistance(pageContext.location_1_address, pageContext.location_2_address)
@@ -172,4 +220,41 @@ function _getDistance(){
     }).catch(e => {
         console.log(e);
     });   
+}
+
+exports.showPrompt = function(args){
+    var fullscreen = args.object.text.indexOf("(full-screen)") !== -1;
+    page.showModal("views/custom_dialog/custom_dialog", "context", function (district, route) {
+        console.log(district + "/" + route);
+        if (district)
+            _getDistrictPolygon(district, 'rgba(255, 0, 255, 0.36)', 'rgba(255, 0, 255, 0.9)');
+        if (route)
+            _getRouteLines(route, 'rgba(255, 0, 0, 1)');
+    }, fullscreen);
+}
+
+
+/**
+ * https://stackoverflow.com/questions/22521982/js-check-if-point-inside-a-polygon
+ * @param {*} x latitude of tested point
+ * @param {*} y longitude of tested point
+ * @param {*} cornersX cornersX = array with x or latitude vertices array
+ * @param {*} cornersY cornersY = array with y or longitude array
+ */
+function checkPnP (x, y, cornersX, cornersY) {
+
+    var i, j=cornersX.length-1 ;
+    var  oddNodes=false;
+
+    var polyX = cornersX;
+    var polyY = cornersY;
+
+    for (i=0; i<cornersX.length; i++) {
+        if ((polyY[i]< y && polyY[j]>=y ||  polyY[j]< y && polyY[i]>=y) &&  (polyX[i]<=x || polyX[j]<=x)) {
+          oddNodes^=(polyX[i]+(y-polyY[i])/(polyY[j]-polyY[i])*(polyX[j]-polyX[i])<x); 
+        }
+        j=i; 
+    }
+
+    return oddNodes;
 }

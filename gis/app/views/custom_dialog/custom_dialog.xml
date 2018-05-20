@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+        shownModally="onShownModally" 
+        loaded="onLoaded" 
+        unloaded="onUnloaded" >
+  <StackLayout class="input-form">
+    <TextField hint="Tên quận" text="quận 7" automationText="quận 7" id="district" />
+    <TextField hint="Tên đường" text="đường võ văn ngân" automationText="đường võ văn ngân" id="route" />
+    <Button text="OK" tap="onButtonTap"/>
+  </StackLayout>
+</Page>

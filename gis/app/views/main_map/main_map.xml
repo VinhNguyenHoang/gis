@@ -2,7 +2,7 @@
     xmlns="http://www.nativescript.org/tns.xsd"
     xmlns:maps="nativescript-google-maps-sdk">
     <ActionBar title="Tra cứu thông tin địa điểm" android:horizontalAlignment="center">
-        <Label text="Tra cứu thông tin địa điểm"/>
+        <Label text="Tra cứu thông tin địa điểm TP. Hồ Chí Minh"/>
     </ActionBar>
 
     <StackLayout class="wrapper">
@@ -41,6 +41,10 @@
                     <Label text="{{ distance }}" row="0" col="1"/>
                 </GridLayout>
             </StackLayout>
+
         </AbsoluteLayout>
+        <StackLayout class="function-view">
+            <Button text="Nhập Quận & Đường" tap="showPrompt" class="check-btn"/>
+        </StackLayout>
     </StackLayout>
 </Page>

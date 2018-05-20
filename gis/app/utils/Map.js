@@ -15,6 +15,8 @@ var _googleGeodecodingApiKey    = 'AIzaSyDFAvWX7Ue1tvQzvt1cZkIOO7oMjaiMOE0';
 var _googleDistanceApiUrl       = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 var _googleDistanceApiKey       = 'AIzaSyBzDfMmTtaERfhDimkUiDef4CvPFl6zvqw';
 
+var _osmNominatimApiURl         = 'https://nominatim.openstreetmap.org/search';
+
 Gplaces.init({
     googleServerApiKey: 'AIzaSyDX172HJFC1QDdV222PBICvu3kDRqIeIXU',
     language: 'vi',
@@ -205,6 +207,69 @@ const Map = {
             {
                 return data.status;
             }
+        }).catch(function(e){
+            console.log(e);
+            throw e;
+        });
+    },
+
+    getAdministrativeAreaLevel2Polygon(addressData){
+        var queryString = "";
+
+        if (addressData instanceof Address)
+        {
+            queryString = addressData._administrative_area_level_2 + ', ' + addressData._administrative_area_level_1;
+        }
+        else
+        {
+            queryString = addressData + ', Thành Phố Hồ Chí Minh';
+        }
+        var url = _osmNominatimApiURl + '?q=' + queryString + '&format=json&polygon_geojson=1';
+
+        return fetch(url)
+        .then(_handleErrors)
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            var poly = [];
+            if (data[0].geojson.coordinates[0]) {
+                for(var i = 0; i < data[0].geojson.coordinates[0].length; i++)
+                {
+                    poly.push(new Gmap.Position.positionFromLatLng(data[0].geojson.coordinates[0][i][1],
+                        data[0].geojson.coordinates[0][i][0]));
+                }
+            }
+            return poly;
+        }).catch(function(e){
+            console.log(e);
+            throw e;
+        });
+    },
+
+    getRouteLines(addressData) {
+        var queryString = addressData + ', Thành Phố Hồ Chí Minh';
+        var url = _osmNominatimApiURl + '?q=' + queryString + '&format=json&polygon_geojson=1';
+        console.log(url);
+        return fetch(url)
+        .then(_handleErrors)
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            var polyline = [];
+            if (data)
+            {
+                for(var i = 0; i < data.length; i++)
+                {
+                    for(var j = 0; j < data[i].geojson.coordinates.length; j++)
+                    {
+                        polyline.push(new Gmap.Position.positionFromLatLng(data[i].geojson.coordinates[j][1],
+                            data[i].geojson.coordinates[j][0]));
+                    }
+                }
+            }
+            return polyline;
         }).catch(function(e){
             console.log(e);
             throw e;
