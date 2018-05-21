@@ -249,7 +249,7 @@ const Map = {
 
     getRouteLines(addressData) {
         var queryString = addressData + ', Thành Phố Hồ Chí Minh';
-        var url = _osmNominatimApiURl + '?q=' + queryString + '&format=json&polygon_geojson=1';
+        var url = _osmNominatimApiURl + '?q=' + queryString + '&limit=1000&format=json&polygon_geojson=1&accept-language=en-US,en;q=0.9,vi;q=0.8';
         console.log(url);
         return fetch(url)
         .then(_handleErrors)
@@ -260,13 +260,32 @@ const Map = {
             var polyline = [];
             if (data)
             {
+                var tempData = data;
+
+                tempData = tempData.filter(function(obj){
+                    return obj.geojson.type === 'LineString';
+                });
+
+                data = tempData;
+
+                // for(var i = 0; i < data.length; i++)
+                // {
+                //     data[i].distance = _calculateDistance(data[0].lat, data[0].lon,
+                //                                         data[i].lat, data[i].lon, "K");
+                // }
+
+                // data.sort(function(a, b){
+                //     return a.distance - b.distance;
+                // });
+
                 for(var i = 0; i < data.length; i++)
                 {
                     for(var j = 0; j < data[i].geojson.coordinates.length; j++)
                     {
+                        // console.log(data[i].geojson.coordinates[j][0] + ',' + data[i].geojson.coordinates[j][1]);
                         polyline.push(new Gmap.Position.positionFromLatLng(data[i].geojson.coordinates[j][1],
                             data[i].geojson.coordinates[j][0]));
-                    }
+                    }   
                 }
             }
             return polyline;
@@ -275,6 +294,22 @@ const Map = {
             throw e;
         });
     }
+}
+
+function _calculateDistance(lat1, lon1, lat2, lon2, unit){
+    var radlat1 = Math.PI * lat1/180
+    var radlat2 = Math.PI * lat2/180
+    var radlon1 = Math.PI * lon1/180
+    var radlon2 = Math.PI * lon2/180
+    var theta = lon1-lon2
+    var radtheta = Math.PI * theta/180
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist)
+    dist = dist * 180/Math.PI
+    dist = dist * 60 * 1.1515
+    if (unit=="K") { dist = dist * 1.609344 }
+    if (unit=="N") { dist = dist * 0.8684 }
+    return dist
 }
 
 module.exports = Map;

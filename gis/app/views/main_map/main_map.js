@@ -188,6 +188,16 @@ function _getDistrictPolygon(address, fillColor, strokeColor) {
 function _getRouteLines(address, color) {
     Map.getRouteLines(address)
     .then(data => {
+        for (var i = 0; i < data.length; i++)
+        {
+            data[i].distance = _calculateDistance(data[0].latitude, data[0].longitude,
+                                                    data[i].latitude, data[i].longitude, "K");
+        }
+        
+        data.sort(function(a, b) {
+            return a.distance - b.distance;
+        });
+
         mapView.removeAllPolylines();
         var polyline = new Gmap.Polyline();
         for (var i = 0; i < data.length; i++)
@@ -197,6 +207,7 @@ function _getRouteLines(address, color) {
         polyline.visible = true;
         polyline.color = new Color(color);
         polyline.width = 5;
+        polyline.geodesic = true;
         mapView.addPolyline(polyline);
         // for(var i = 0; i < data.length; i++)
         // {
@@ -257,4 +268,20 @@ function checkPnP (x, y, cornersX, cornersY) {
     }
 
     return oddNodes;
+}
+
+function _calculateDistance(lat1, lon1, lat2, lon2, unit){
+    var radlat1 = Math.PI * lat1/180
+    var radlat2 = Math.PI * lat2/180
+    var radlon1 = Math.PI * lon1/180
+    var radlon2 = Math.PI * lon2/180
+    var theta = lon1-lon2
+    var radtheta = Math.PI * theta/180
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist)
+    dist = dist * 180/Math.PI
+    dist = dist * 60 * 1.1515
+    if (unit=="K") { dist = dist * 1.609344 }
+    if (unit=="N") { dist = dist * 0.8684 }
+    return dist
 }
