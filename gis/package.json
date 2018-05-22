@@ -14,6 +14,7 @@
 		"nativescript-google-maps-sdk": "^2.5.0",
 		"nativescript-google-places": "0.0.3",
 		"nativescript-theme-core": "~1.0.4",
+		"sort-by-distance": "^1.0.0",
 		"tns-core-modules": "~3.4.0"
 	},
 	"devDependencies": {

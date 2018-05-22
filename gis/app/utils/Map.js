@@ -248,8 +248,10 @@ const Map = {
     },
 
     getRouteLines(addressData) {
-        var queryString = addressData + ', Thành Phố Hồ Chí Minh';
-        var url = _osmNominatimApiURl + '?q=' + queryString + '&limit=1000&format=json&polygon_geojson=1&accept-language=en-US,en;q=0.9,vi;q=0.8';
+        // var queryString = addressData + ', Thành Phố Hồ Chí Minh';
+        var street = 'street=' + addressData;
+        var city = 'city=Hồ Chí Minh';
+        var url = _osmNominatimApiURl + '?' + street + '&' + city  + '&limit=1000&format=json&polygon_geojson=1&accept-language=en-US,en;q=0.9,vi;q=0.8';
         console.log(url);
         return fetch(url)
         .then(_handleErrors)
@@ -260,35 +262,11 @@ const Map = {
             var polyline = [];
             if (data)
             {
-                var tempData = data;
-
-                tempData = tempData.filter(function(obj){
+                data = data.filter(function(obj){
                     return obj.geojson.type === 'LineString';
                 });
-
-                data = tempData;
-
-                // for(var i = 0; i < data.length; i++)
-                // {
-                //     data[i].distance = _calculateDistance(data[0].lat, data[0].lon,
-                //                                         data[i].lat, data[i].lon, "K");
-                // }
-
-                // data.sort(function(a, b){
-                //     return a.distance - b.distance;
-                // });
-
-                for(var i = 0; i < data.length; i++)
-                {
-                    for(var j = 0; j < data[i].geojson.coordinates.length; j++)
-                    {
-                        // console.log(data[i].geojson.coordinates[j][0] + ',' + data[i].geojson.coordinates[j][1]);
-                        polyline.push(new Gmap.Position.positionFromLatLng(data[i].geojson.coordinates[j][1],
-                            data[i].geojson.coordinates[j][0]));
-                    }   
-                }
             }
-            return polyline;
+            return data;
         }).catch(function(e){
             console.log(e);
             throw e;

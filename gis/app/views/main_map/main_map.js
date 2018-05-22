@@ -8,8 +8,13 @@ var application = require("application");
 var Color = require("color").Color;
 var Dialogs = require("ui/dialogs");
 
+var testResults = {false: 'ngoài biên', 1: 'trong biên', 0: 'thuộc biên'};
 var mapView = null;
 var page = null;
+var listPolylines = [];
+var listPolygons = [];
+var enteredDistrictData = null;
+var enteredRouteData = null;
 var latlng_1 = null;
 var latlng_2 = null;
 var pageContext = new ObservableModule.fromObject({
@@ -65,7 +70,7 @@ exports.onMapReady = function(args){
 function _getDataFromAddress1(address) {
     return Map.getDataFromAddress(address).then(data =>{
         var marker = new Gmap.Marker();
-        marker.title = data._address;
+        marker.title = "Z1: " + data._address;
         marker.draggable = false;
         marker.userData = { index: data._place_id };
         marker.color = "red";
@@ -87,7 +92,7 @@ function _getDataFromAddress1(address) {
 function _getDataFromAddress2(address) {
     return Map.getDataFromAddress(address).then(data =>{
         var marker = new Gmap.Marker();
-        marker.title = data._address;
+        marker.title = "Z2: " + data._address;
         marker.draggable = false;
         marker.userData = { index: data._place_id };
         marker.color = "blue";
@@ -148,7 +153,7 @@ function _getMapDirections(fromLocation, toLocation) {
             var polyline = new Gmap.Polyline();
             for (var i = 0; i < decodedString.length; i++)
             {
-                polyline.addPoints(decodedString[i]);
+                polyline.addPoint(decodedString[i]);
             }
     
             polyline.visible = true;
@@ -156,6 +161,7 @@ function _getMapDirections(fromLocation, toLocation) {
             polyline.color = new Color('#0011ff');
             polyline.geodesic = true;
             mapView.addPolyline(polyline);
+            listPolylines.push(polyline);
         }
         else
         {
@@ -168,8 +174,21 @@ function _getMapDirections(fromLocation, toLocation) {
 }
 
 function _getDistrictPolygon(address, fillColor, strokeColor) {
-    Map.getAdministrativeAreaLevel2Polygon(address)
+    return Map.getAdministrativeAreaLevel2Polygon(address)
     .then(data => {
+        if (data.length == 0)
+        {
+            Dialogs.alert({
+                title: "Lỗi",
+                message: "Không có kết quả",
+                okButtonText: "OK"
+            }).then(function () {
+                console.log("Dialog closed!");
+            });
+            return;
+        }
+
+        enteredDistrictData = data;
         var polygon = new Gmap.Polygon();
         for (var i = 0; i < data.length; i++)
         {
@@ -180,6 +199,7 @@ function _getDistrictPolygon(address, fillColor, strokeColor) {
         polygon.strokeColor = new Color(strokeColor);
         polygon.strokeWidth = 5;
         mapView.addPolygon(polygon);
+        listPolygons.push(polygon);
     }).catch(e => {
         console.log(e);
     });
@@ -188,35 +208,23 @@ function _getDistrictPolygon(address, fillColor, strokeColor) {
 function _getRouteLines(address, color) {
     Map.getRouteLines(address)
     .then(data => {
-        for (var i = 0; i < data.length; i++)
+        for(var j = 0; j < data.length; j++)
         {
-            data[i].distance = _calculateDistance(data[0].latitude, data[0].longitude,
-                                                    data[i].latitude, data[i].longitude, "K");
+            var polyline = null;
+            polyline = new Gmap.Polyline();
+            for(var i = 0; i < data[j].geojson.coordinates.length; i++)
+            {
+                polyline.addPoint(new Gmap.Position.positionFromLatLng(
+                    data[j].geojson.coordinates[i][1], data[j].geojson.coordinates[i][0]
+                ));
+            }
+            polyline.visible = true;
+            polyline.color = new Color(color);
+            polyline.width = 5;
+            mapView.addPolyline(polyline);
+            listPolylines.push(polyline);
         }
-        
-        data.sort(function(a, b) {
-            return a.distance - b.distance;
-        });
 
-        mapView.removeAllPolylines();
-        var polyline = new Gmap.Polyline();
-        for (var i = 0; i < data.length; i++)
-        {
-            polyline.addPoint(data[i]);
-        }
-        polyline.visible = true;
-        polyline.color = new Color(color);
-        polyline.width = 5;
-        polyline.geodesic = true;
-        mapView.addPolyline(polyline);
-        // for(var i = 0; i < data.length; i++)
-        // {
-        //     var marker = new Gmap.Marker();
-        //     marker.draggable = false;
-        //     marker.color = "green";
-        //     marker.position = data[i];
-        //     mapView.addMarker(marker);
-        // }
     }).catch(e => {
         console.log(e);
     });
@@ -233,15 +241,56 @@ function _getDistance(){
     });   
 }
 
+function _checkPointAndPolygon(point1, point2, polygon){
+    if (polygon == null)
+        return;
+
+    var result1 = checkPnP(point1.latitude, point1.longitude, polygon.map(p => p.latitude), polygon.map(p => p.longitude));
+    var result2 = checkPnP(point2.latitude, point2.longitude, polygon.map(p => p.latitude), polygon.map(p => p.longitude));
+    Dialogs.alert({
+        title: "Kết quả",
+        message: "Điểm z1 nằm " + testResults[result1] + " của quận đã nhập \nĐiểm z2 nằm " + testResults[result2] + " của quận đã nhập",
+        okButtonText: "OK"
+    }).then(function () {
+        console.log("Dialog closed!");
+    });
+}
+
+function _removeAllPolylines() {
+    while (listPolylines.length > 0)
+    {
+        console.log(">> Removing polyline");
+        mapView.removeShape(listPolylines.pop());
+    }
+}
+
+function _removeAllPolygons() {
+    while(listPolygons.length > 0)
+    {
+        console.log(">> Removing polygon");
+        mapView.removeShape(listPolygons.pop());
+    }
+}
+
 exports.showPrompt = function(args){
     var fullscreen = args.object.text.indexOf("(full-screen)") !== -1;
     page.showModal("views/custom_dialog/custom_dialog", "context", function (district, route) {
         console.log(district + "/" + route);
         if (district)
-            _getDistrictPolygon(district, 'rgba(255, 0, 255, 0.36)', 'rgba(255, 0, 255, 0.9)');
+        {
+            _removeAllPolygons();
+            _getDistrictPolygon(district, 'rgba(255, 0, 255, 0.36)', 'rgba(255, 0, 255, 0.9)')
+            .then(function(){
+                _checkPointAndPolygon(latlng_1, latlng_2, enteredDistrictData);
+            });
+        }
         if (route)
+        {
+            _removeAllPolylines();
             _getRouteLines(route, 'rgba(255, 0, 0, 1)');
+        }
     }, fullscreen);
+    
 }
 
 
