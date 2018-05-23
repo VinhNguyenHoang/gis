@@ -185,7 +185,7 @@ function _getDistrictPolygon(address, fillColor, strokeColor) {
             }).then(function () {
                 console.log("Dialog closed!");
             });
-            return;
+            return false;
         }
 
         enteredDistrictData = data;
@@ -200,6 +200,8 @@ function _getDistrictPolygon(address, fillColor, strokeColor) {
         polygon.strokeWidth = 5;
         mapView.addPolygon(polygon);
         listPolygons.push(polygon);
+
+        return true;
     }).catch(e => {
         console.log(e);
     });
@@ -247,13 +249,70 @@ function _checkPointAndPolygon(point1, point2, polygon){
 
     var result1 = checkPnP(point1.latitude, point1.longitude, polygon.map(p => p.latitude), polygon.map(p => p.longitude));
     var result2 = checkPnP(point2.latitude, point2.longitude, polygon.map(p => p.latitude), polygon.map(p => p.longitude));
+    
+    var resultPoint1 = _checkPointInPolyline(point1, listPolylines);
+    var resultPoint2 = _checkPointInPolyline(point2, listPolylines);
+
+    var resultStr = '';
+
+    resultStr += 'Điểm z1 ' + ((resultPoint1 == true)?'thuộc':'không thuộc') + ' đường đã nhập\n';
+    resultStr += 'Điểm z2 ' + ((resultPoint2 == true)?'thuộc':'không thuộc') + ' đường đã nhập\n';
+    resultStr += 'Điểm z1 nằm ' + testResults[result1] + ' của quận đã nhập\n';
+    resultStr += 'Điểm z2 nằm ' + testResults[result2] + ' của quận đã nhập\n';
     Dialogs.alert({
         title: "Kết quả",
-        message: "Điểm z1 nằm " + testResults[result1] + " của quận đã nhập \nĐiểm z2 nằm " + testResults[result2] + " của quận đã nhập",
+        message: resultStr,
         okButtonText: "OK"
     }).then(function () {
         console.log("Dialog closed!");
     });
+}
+
+function _checkPointInPolyline(point, polyline){
+    for(var i = 0; i < polyline.length; i++)
+    {
+        for(var j = 0; j < polyline[i].length - 2; j++)
+        {
+            if (_checkPointInSegment(point, polyline[i][j], polyline[i][j + 1]))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function _checkPointInSegment(point, start, end){
+    var deltaX = end.latitude - start.latitude;
+    var isInXDir;
+    if (deltaX == 0)
+    {
+        isInXDir = (point.latitude == start.latitude);
+    }
+    else
+    {
+        var t = (point.latitude - start.latitude) / deltaX;
+        isInXDir = (t >= 0 && t <= 1);
+    }
+
+    if (isInXDir)
+    {
+        var deltaY = end.longitude - start.longitude;
+        if (deltaY == 0)
+        {
+            return (point.longitude == start.longitude);
+        }
+        else
+        {
+            var u = (point.longitude - start.longitude) / deltaY;
+            return (u >= 0 && u <= 1);
+        }
+    }
+    else
+    {
+        return false;
+    }
 }
 
 function _removeAllPolylines() {
@@ -280,8 +339,9 @@ exports.showPrompt = function(args){
         {
             _removeAllPolygons();
             _getDistrictPolygon(district, 'rgba(255, 0, 255, 0.36)', 'rgba(255, 0, 255, 0.9)')
-            .then(function(){
-                _checkPointAndPolygon(latlng_1, latlng_2, enteredDistrictData);
+            .then(function(result){
+                if (result == true)
+                    _checkPointAndPolygon(latlng_1, latlng_2, enteredDistrictData);
             });
         }
         if (route)
