@@ -1,8 +1,11 @@
 <Page loaded="pageLoaded" tap="dismissKeyboardInput">
+    <ActionBar title="Tra cứu thông tin địa điểm" android:horizontalAlignment="center">
+        <Label text="Tra cứu thông tin địa điểm TP. Hồ Chí Minh"/>
+    </ActionBar>
     <StackLayout class="main">
-        <TextField text="30 trịnh đình thảo hòa thạnh" id="location_1" hint="Nhập địa điểm 1" autocorrect="false" autocapitalizationType="none"/>
-        <TextField text="260 võ văn ngân thủ đức" id="location_2" hint="Nhập địa điểm 2" autocorrect="false" autocapitalizationType="none"/>
+        <TextField class="input-text" id="location_1" text="Suối tiên" hint="Nhập địa điểm 1" autocorrect="false" autocapitalizationType="none"/>
+        <TextField class="input-text" id="location_2" text="110 võ văn ngân" hint="Nhập địa điểm 2" autocorrect="false" autocapitalizationType="none"/>
 
-        <Button text="Tiếp tục" tap="continue"/>
+        <Button class="custom-btn" text="Tiếp tục" tap="continue"/>
     </StackLayout>
 </Page>

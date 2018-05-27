@@ -43,8 +43,13 @@
             </StackLayout>
 
         </AbsoluteLayout>
-        <StackLayout class="function-view">
+        <!-- <StackLayout class="function-view">
             <Button text="Nhập Quận & Đường" tap="showPrompt" class="check-btn"/>
-        </StackLayout>
+        </StackLayout> -->
+
+        <GridLayout rows="*" columns="*, *" class="function-view">
+            <Button text="Nhập quận" tap="showPromptDistrict" row="0" col="0" class="check-btn"/>
+            <Button text="Nhập đường" tap="showPromptRoute" row="0" col="2" class="check-btn"/>
+        </GridLayout>
     </StackLayout>
 </Page>

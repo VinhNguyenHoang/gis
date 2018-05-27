@@ -126,7 +126,7 @@ const Map = {
 
     getDataFromAddress(address) {
         var url = _googleGeodecodingApiUrl + "?address=" + address + "&key=" + _googleGeodecodingApiKey + "&language=vi";
-        
+
         return fetch(url)
         .then(_handleErrors)
         .then(response => {
@@ -180,7 +180,7 @@ const Map = {
             }
             else
             {
-                return data.status;
+                return data;
             }
 
         }).catch(function(e){
@@ -213,7 +213,7 @@ const Map = {
         });
     },
 
-    getAdministrativeAreaLevel2Polygon(addressData){
+    getDistrictPolygon(addressData, geojson = 0){
         var queryString = "";
 
         if (addressData instanceof Address)
@@ -232,15 +232,24 @@ const Map = {
             return response.json();
         })
         .then(data => {
-            var poly = [];
-            if (data[0].geojson.coordinates[0]) {
-                for(var i = 0; i < data[0].geojson.coordinates[0].length; i++)
-                {
-                    poly.push(new Gmap.Position.positionFromLatLng(data[0].geojson.coordinates[0][i][1],
-                        data[0].geojson.coordinates[0][i][0]));
-                }
+            if (geojson == 1)
+            {
+                data[0].geojson.coordinates[0] = data[0].geojson.coordinates[0].reverse();
+                return data[0].geojson;
             }
-            return poly;
+            else
+            {
+                var poly = [];
+                if (data[0].geojson.coordinates[0]) {
+                    for(var i = 0; i < data[0].geojson.coordinates[0].length; i++)
+                    {
+                        poly.push(new Gmap.Position.positionFromLatLng(data[0].geojson.coordinates[0][i][1],
+                            data[0].geojson.coordinates[0][i][0]));
+                    }
+                }
+                return poly;
+            }
+            
         }).catch(function(e){
             console.log(e);
             throw e;
@@ -248,11 +257,10 @@ const Map = {
     },
 
     getRouteLines(addressData) {
-        // var queryString = addressData + ', Thành Phố Hồ Chí Minh';
         var street = 'street=' + addressData;
         var city = 'city=Hồ Chí Minh';
         var url = _osmNominatimApiURl + '?' + street + '&' + city  + '&limit=1000&format=json&polygon_geojson=1&accept-language=en-US,en;q=0.9,vi;q=0.8';
-        console.log(url);
+
         return fetch(url)
         .then(_handleErrors)
         .then(response => {

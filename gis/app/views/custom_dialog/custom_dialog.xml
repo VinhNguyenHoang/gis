@@ -3,8 +3,8 @@
         loaded="onLoaded" 
         unloaded="onUnloaded" >
   <StackLayout class="input-form">
-    <TextField hint="Tên quận" text="quận 7" automationText="quận 7" id="district" />
-    <TextField hint="Tên đường" text="đường kha vạn cân" automationText="đường võ văn ngân" id="route" />
+    <TextField visibility="{{ isRouteForm == true ? 'collapsed':'visible' }}" hint="Tên quận" id="district" />
+    <TextField visibility="{{ isRouteForm == true ? 'visible':'collapsed' }}" hint="Tên đường" id="route" />
     <Button text="OK" tap="onButtonTap"/>
   </StackLayout>
 </Page>

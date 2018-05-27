@@ -1,11 +1,40 @@
+ActionBar{
+    background-color: #1e1af0;
+    color: #ffffff;
+    text-align: center;
+}
+
 .main{
-    margin: 10;
+    padding-top: 50;
+    background-color: #1e1af0;
 }
 
 textfield{
-    margin-bottom: 12;
-    placeholder-color: #777777;
-    background-color: #ffffff;
-    border-radius: 1;
-    font-size: 17em;
+margin-left: 50;
+margin-right: 50;
+margin-bottom: 10;
+placeholder-color: #6b6b83;
+background-color: #ffffff;
+border-radius: 1;
+}
+
+.input-text{
+color: #000000;
+font-weight: 700;
+font-size: 15em;
+}
+
+.custom-btn{
+margin-left: 50;
+margin-right: 50;
+margin-top: 10;
+border-radius: 2;
+background-color: #ffffff;
+border-color: transparent;
+border-width: 1;
+color: #19499b;
+}
+
+.custom-btn:pressed{
+background-color: #bebebe;
 }

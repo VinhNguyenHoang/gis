@@ -6,7 +6,7 @@ var location_1;
 var location_2;
 exports.pageLoaded = function(args){
     var page = args.object;
-    page.actionBarHidden = true;
+    
     location_1 = page.getViewById("location_1");
     location_2 = page.getViewById("location_2");
 }
@@ -16,6 +16,9 @@ exports.dismissKeyboardInput = function() {
 }
 
 exports.continue = function(){
+
+    if (!location_1.text && !location_2.text)
+        return;
 
     var topmost = FrameModule.topmost();
     topmost.navigate({

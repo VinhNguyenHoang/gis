@@ -10,6 +10,7 @@
 		}
 	},
 	"dependencies": {
+		"d3-geo": "^1.10.0",
 		"nativescript-geolocation": "^4.2.6",
 		"nativescript-google-maps-sdk": "^2.5.0",
 		"nativescript-google-places": "0.0.3",
